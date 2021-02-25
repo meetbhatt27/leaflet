@@ -1,0 +1,21 @@
+<!-- EACH SECTION ITEMS CONTAINER -->
+
+<div class="row-item item-list" [id]="'page-'+pageNumber+'-section-'+sectionCount+'-itemlistwrap'" [style.height]="height[(section.itemList.length)]">
+    
+    <!-- ITEMS TILES  -->
+    
+    <div *ngFor="let item of section.itemList; let itemCount=index"
+        [class]="(gridCellSize[(section.itemList.length)]!=null && gridCellSize[(section.itemList.length)][itemCount]!=undefined)? 'item-entity '+gridCellSize[(section.itemList.length)][itemCount] : 'item-entity'"
+        [style.height]="getHeightOfEachItem(section.itemList.length)"
+        [id]="gridCellSize[(section.itemList.length)][itemCount]+'-page-'+pageNumber+'-section-'+sectionCount+'-item-'+itemCount"  (drop)="onDrop($event,gridCellSize[(section.itemList.length)][itemCount]+'-page-'+pageNumber+'-section-'+sectionCount+'-item-'+itemCount)" dragOverClass="drop-over-active" mwlDroppable>
+        <canvas
+            [id]="gridCellSize[(section.itemList.length)][itemCount]+'-page-'+pageNumber+'-section-'+sectionCount+'-item-'+itemCount+'-canvas'"
+            #html2Canvas style="width: 100%; height: 100%;" data="item-element">
+        </canvas>
+    </div>
+    
+    <div class="drag-control-bottom"
+        (mousedown)="initDragOfDiv($event,'page-'+pageNumber+'-section-'+sectionCount+'-itemlistwrap')" >
+    </div>
+
+</div>
