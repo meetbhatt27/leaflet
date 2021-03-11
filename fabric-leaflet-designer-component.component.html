@@ -1,0 +1,125 @@
+<mat-toolbar color="primary">
+    <span>Dynamic Leaflet Generator</span>
+</mat-toolbar>
+
+<div class="content-wrap">
+    <div class="left-panel">
+        <br/>
+        <button mat-button color="primary" (click)="deleteObject()" class="delete-btn"><i class="fas fa-trash"></i>Delete selected image</button>
+        <br/>
+        <button mat-button color="" style="cursor: text !important;" >  Background</button>
+        <ul class="background-list">
+            <li *ngFor="let bg of backgroundCOlorList; let bgIndex=index" (click)="changeBackground(bg,bgIndex)" [ngClass]="currentBackgroundSelected==bgIndex ? 'selected-bg' :'not-selected'">
+                <span *ngIf="bg.type=='color'" [style.backgroundColor]="bg.code">
+                    &nbsp;
+                </span>
+                <span *ngIf="bg.type=='gradient'" [style.backgroundImage]="bg.code">
+                    &nbsp;
+                </span>
+                <span *ngIf="bg.type=='pattern'" [style.backgroundColor]="bg.backgroundColor" [style.backgroundImage]="'url(\''+bg.backgroundImage+'\')'" [style.backgroundPosition]="bg.backgroundPosition" [style.backgroundRepeat]="bg.backgroundRepeat" [style.backgroundSize]="bg.backgroundSize">
+                    &nbsp;
+                </span>
+            </li>
+        </ul>
+        <button mat-raised-button color="primary" (click)="downloadImage()" class="download-btn"><i class="fas fa-file-download"></i> Download Leaflet</button>
+    </div>
+    <div class="main-panel">
+        <div class="tab-bar">
+            <button mat-button *ngFor="let pageHeading of leafletService.pageData; let pageTopCounter=index"
+                (click)="changeTabToThis(pageTopCounter)" [class]="currentPage==pageTopCounter ? 'selected' :''">
+                Page {{pageTopCounter+1}}
+            </button>
+        </div>
+        <div [class]="isPrinting==true ? 'print-mode tab-body' : 'tab-body'">
+            <div [class]="currentPage==pageNumber ? 'selected-wrap wrap '+pageNumber : 'wrap '+pageNumber" #screen
+                [id]="pageNumber" *ngFor="let page of leafletService.pageData; let pageNumber=index">
+                <!-- STORE INFO FIRST PAGE -->
+                <div class="row-item intro-header" [id]="'leaflet-intro-header'" *ngIf="pageNumber==0">
+                    <canvas [id]="'leaflet-intro-header-canvas'" #html2Canvas data="row-element"
+                        style="width: 100%; height: 100%;">
+                    </canvas>
+                    <div class="drag-control-bottom" (mousedown)="initDragOfDiv($event,'leaflet-intro-header')" >
+                    </div>
+                </div>
+                <!-- EACH SECTION DATA -->
+                <ng-container *ngFor="let section of page.sections; let sectionCount=index;">
+                    <!-- EACH SECTION HEADING CONTAINER -->
+                    <div class="row-item section-header" [id]="'page-'+pageNumber+'-section-head-'+sectionCount"
+                        *ngIf="section.name!='NA' && section.name!='na' && section.name!='N/A' && section.name!='n/a' && section.name!='' && section.name!=null && section.name!=undefined">
+                        <canvas [id]="'page-'+pageNumber+'-section-head-'+sectionCount+'-canvas'" #html2Canvas
+                            style="width: 100%; height: 100%;" data="row-element">
+                        </canvas>
+                        <div class="drag-control-bottom" (mousedown)="initDragOfDiv($event,'page-'+pageNumber+'-section-head-'+sectionCount)" >
+                        </div>
+                    </div>
+
+                    <!-- EACH SECTION ITEMS CONTAINER -->
+                    <div class="row-item item-list" [id]="'page-'+pageNumber+'-section-'+sectionCount+'-itemlistwrap'" [style.height]="height[(section.itemList.length)]">
+                        <!-- ITEMS TILES  -->
+                        <div *ngFor="let item of section.itemList; let itemCount=index"
+                            [class]="(gridCellSize[(section.itemList.length)]!=null && gridCellSize[(section.itemList.length)][itemCount]!=undefined)? 'item-entity '+gridCellSize[(section.itemList.length)][itemCount] : 'item-entity'"
+                            [style.height]="getHeightOfEachItem(section.itemList.length)"
+                            [id]="gridCellSize[(section.itemList.length)][itemCount]+'-page-'+pageNumber+'-section-'+sectionCount+'-item-'+itemCount"  (drop)="onDrop($event,gridCellSize[(section.itemList.length)][itemCount]+'-page-'+pageNumber+'-section-'+sectionCount+'-item-'+itemCount)" dragOverClass="drop-over-active" mwlDroppable>
+                            <canvas
+                                [id]="gridCellSize[(section.itemList.length)][itemCount]+'-page-'+pageNumber+'-section-'+sectionCount+'-item-'+itemCount+'-canvas'"
+                                #html2Canvas style="width: 100%; height: 100%;" data="item-element">
+                            </canvas>
+                        </div>
+                        <div class="drag-control-bottom"
+                            (mousedown)="initDragOfDiv($event,'page-'+pageNumber+'-section-'+sectionCount+'-itemlistwrap')" >
+                        </div>
+                    </div>
+                </ng-container>
+
+                <div class="row-item main-footer" [id]="'leaflet-footer-main'" *ngIf="pageNumber==0">
+                    <canvas [id]="'leaflet-footer-main-canvas'" #html2Canvas style="width: 100%; height: 100%;"
+                        data="row-element">
+                    </canvas>
+                    <!-- <div class="drag-control-bottom" (mousedown)="initDragOfDiv($event,'leaflet-footer-main')">
+                    </div> -->
+                </div>
+                <div class="row-item one-line-footer" [id]="'one-line-footer-page'+pageNumber">
+                    <canvas [id]="'one-line-footer-page'+pageNumber+'-canvas'" #html2Canvas
+                        style="width: 100%; height: 100%;" data="row-element">
+                    </canvas>
+                    <!-- <div class="drag-control-bottom" (mousedown)="initDragOfDiv($event,'leaflet-footer-one-line')">
+                    </div> -->
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- <mat-tab-group> -->
+        <!-- <mat-tab label="Page {{pageNumber+1}}" *ngFor="let page of leafletService.pageData; let pageNumber=index" (click)="changeTabToThis(pageNumber)">
+                <button (click)="downloadImage(pageNumber)">Download Page {{pageNumber+1}}</button>
+               
+
+            </mat-tab> -->
+        <!-- </mat-tab-group> -->
+    </div>
+    <div class="right-panel">
+        <br/>
+        <button mat-button color="" style="cursor: text !important;">Media Panel</button>
+        <ngx-file-drop dropZoneLabel="Drop files here" (onFileDrop)="dropped($event)" (onFileOver)="fileOver($event)"
+            (onFileLeave)="fileLeave($event)">
+            <ng-template ngx-file-drop-content-tmp let-openFileSelector="openFileSelector" *ngIf="productImages.length==0">
+            Drop your image files here.
+            <button type="button" (click)="openFileSelector()">Browse Files</button>
+        </ng-template>
+        </ngx-file-drop>
+        <ul class="image-list">
+            <li *ngFor="let file of productImages">
+                <!-- <img [src]="file" /> -->
+                <div mwlDraggable [dropData]="file"
+                dragActiveClass="drag-active" snapDraggedEvents="false"
+                [touchStartLongPress]="{ delay: 300, delta: 30 }" class="img-item"  [style.background]="getImage(file)" (drag)="dragStart($event)" (dragEnd)="dragEnd($event)"></div>
+                <!-- (dragEnd)="dragEnd($event)" -->
+            </li>
+        </ul>
+    </div>
+    <div id="download">
+        <img #canvas>
+        <a #downloadLink></a>
+    </div>
+</div>
